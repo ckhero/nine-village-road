@@ -18,3 +18,7 @@ config/common.yaml
 
 .idea
 config/secret
+deploy/nine
+deploy/secret.conf
+deploy/config.conf
+deploy/scp_nine.sh

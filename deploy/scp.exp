@@ -1,0 +1,12 @@
+#!/usr/bin/expect
+set user [lindex $argv 0]
+set host [lindex $argv 1]
+set pwd  [lindex $argv 2]
+set from_path [lindex $argv 3]
+set to_path [lindex $argv 4]
+
+spawn scp $from_path $user@$host:$to_path
+expect {
+    "*password:" { send "$pwd\n" }
+}
+interact

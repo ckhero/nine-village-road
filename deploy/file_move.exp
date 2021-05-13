@@ -1,0 +1,16 @@
+#!/usr/bin/expect -f
+
+if { $argc < 2 } {
+    send_user "Usage: ssh-login \[user@host\] \[passwd\]\r\n"
+    exit
+}
+
+set addr [lindex $argv 0]
+set action [lindex $argv 1]
+set passwd [lindex $argv 2]
+
+spawn ssh $addr $action
+expect "*assword:*"
+send "${passwd}\r\n"
+
+interact
