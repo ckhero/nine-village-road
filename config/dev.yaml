@@ -1,0 +1,23 @@
+project: mini.program
+application: web
+env: dev
+debug:
+  host: 0.0.0.0
+  port: 5051
+http:
+  host: 0.0.0.0
+  port: 7002
+logger:
+  level: debug
+database:
+  default:
+    dialect: mysql
+    host: 47.100.86.135
+    port: 3306
+    username: jiuluzhai
+    password: Suanni123!
+    database: jiuluzhai
+    charset: "utf8mb4"
+    logMode: 4
+    maxIdleConnNum: 10
+    MaxOpenConnNum: 100
