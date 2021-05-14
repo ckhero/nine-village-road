@@ -9,6 +9,8 @@ package repo
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"github.com/ckhero/go-common/config"
 	"github.com/ckhero/go-common/errors"
@@ -17,8 +19,11 @@ import (
 	"github.com/iGoogle-ink/gopay/pkg/util"
 	"github.com/iGoogle-ink/gopay/wechat"
 	"github.com/silenceper/wechat/v2/miniprogram"
+	"hash"
+	"net/url"
 	"nine-village-road/internal/domain"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -84,12 +89,33 @@ func (w *weixinRepo) SendAppletRed(ctx context.Context, data *domain.AppletRed) 
 	paySign := &domain.AppletRedPaySign{
 		Timestamp: strconv.FormatInt(time.Now().Unix(), 10),
 		NonceStr:  util.GetRandomString(32),
-		Package:   rsp.Packages,
+		Package:   url.QueryEscape(rsp.Packages),
 		SignType:  "MD5",
 	}
-	paySign.PaySign = wechat.GetJsapiPaySign(cfg.AppIdApp, paySign.NonceStr, paySign.Package, wechat.SignType_MD5, paySign.Timestamp, cfg.ApiKey)
+	paySign.PaySign = PaySign(cfg.AppIdApp, paySign.NonceStr, paySign.Package, wechat.SignType_MD5, paySign.Timestamp, cfg.ApiKey)
 	return paySign, err
 }
+
+func PaySign(appId, nonceStr, packages, signType, timeStamp, apiKey string) string{
+	var (
+		buffer strings.Builder
+		h      hash.Hash
+	)
+	buffer.WriteString("appId=")
+	buffer.WriteString(appId)
+	buffer.WriteString("&nonceStr=")
+	buffer.WriteString(nonceStr)
+	buffer.WriteString("&package=")
+	buffer.WriteString(packages)
+	buffer.WriteString("&timeStamp=")
+	buffer.WriteString(timeStamp)
+	buffer.WriteString("&key=")
+	buffer.WriteString(apiKey)
+	h = md5.New()
+	h.Write([]byte(buffer.String()))
+	return hex.EncodeToString(h.Sum(nil))
+}
+
 
 func(w *weixinRepo) WalletTransfer(ctx context.Context, data *domain.WalletTransfer) error {
 	logger.GetLoggerWithBody(ctx, data).Info("企业付款")

@@ -41,15 +41,20 @@ func(u *UserService) Login(c *gin.Context) {
 func(u *UserService) SendAppletRed(c *gin.Context) {
 	openId := gin2.GetOpenId(c)
 	ctx, _ := context.ContextWithSpan(c)
+	// 校验用户
 	if err := u.uc.CheckUserIllegal(ctx, openId); err != nil {
 		format.Fail(c, err)
 		return
 	}
+	// TODO 校验是否可领取
+	// TODO 领取prepare
+	// TODO 领取
 	pasySign, err := u.weixinUsecase.SendAppletRed(ctx, openId)
 	if err != nil {
 		format.Fail(c, err)
 		return
 	}
+	// TODO confirm or cancel
 	rsp := api.SendAppletRedRsp{}
 	_ = json.DeepCopyPHP(pasySign, &rsp)
 	format.Success(c, rsp)

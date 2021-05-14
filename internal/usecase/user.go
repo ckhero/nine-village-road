@@ -47,7 +47,13 @@ func (u *userUsecase) Login(ctx context.Context, code string) (*domain.User, err
 var whiteOpenIdList = map[string]struct{}{
 	"om-Po5PJsl3_gkeX-KfL3nPFqOuE" : {},
 	"om-Po5B0EtZ1Io6ouz6i2ZbZsnaQ" : {},
+	"om-Po5FpkMGCD2EHGPgrzya5Rhyk" : {},
+	"om-Po5PV5GjUGH-5Mn40YrGyhWzE" : {},
+	"om-Po5Km1HK4vunZCYrE2yPhbRM4" : {},
+	"om-Po5F11dYyhNLSZaS4k-UJ2teo" : {},
+	"om-Po5O7syEkF-ncaN4FEs72FhwY" : {},
 }
+
 
 func (u *userUsecase) CheckUserIllegal(ctx context.Context, openId string) error {
 	user, err := u.userRepo.GetByOpenId(ctx, openId)

@@ -21,11 +21,11 @@ type AppletRed struct {
 }
 
 type AppletRedPaySign struct {
-	Timestamp string
-	NonceStr string
-	Package string
-	SignType string
-	PaySign string
+	Timestamp string `json:"timestamp"`
+	NonceStr string `json:"nonce_str"`
+	Package string `json:"package"`
+	SignType string `json:"sign_type"`
+	PaySign string `json:"pay_sign"`
 }
 
 type WalletTransfer struct {
