@@ -16,9 +16,10 @@ import (
 	"github.com/iGoogle-ink/gopay"
 	"github.com/iGoogle-ink/gopay/pkg/util"
 	"github.com/iGoogle-ink/gopay/wechat"
-	xerrors "github.com/pkg/errors"
 	"github.com/silenceper/wechat/v2/miniprogram"
 	"nine-village-road/internal/domain"
+	"strconv"
+	"time"
 )
 
 type weixinRepo struct {
@@ -31,7 +32,7 @@ func NewWeixinRepo(miniPayClient *wechat.Client, miniClient *miniprogram.MiniPro
 }
 
 // https://pay.weixin.qq.com/wiki/doc/api/tools/miniprogram_hb.php?chapter=18_2&index=3
-func (w *weixinRepo) SendAppletRed(ctx context.Context, data *domain.AppletRed) error {
+func (w *weixinRepo) SendAppletRed(ctx context.Context, data *domain.AppletRed) (*domain.AppletRedPaySign, error) {
 	logger.GetLoggerWithBody(ctx, data).Info("红包参数")
 
 	cfg := config.GetWeixinPayCfg()
@@ -73,7 +74,57 @@ func (w *weixinRepo) SendAppletRed(ctx context.Context, data *domain.AppletRed) 
 	logger.GetLoggerWithBody(ctx, rsp).Info("发送红包反馈")
 
 	if err != nil || rsp.ResultCode != "SUCCESS" {
-		return errors.InternalServer("weixin", fmt.Sprintf("%v", err), "发送红包失败")
+		msg := "红包发送失败"
+		if rsp != nil {
+			msg = rsp.ReturnMsg
+		}
+		return nil, errors.InternalServer("weixin", msg, "发送红包失败")
+	}
+
+	paySign := &domain.AppletRedPaySign{
+		Timestamp: strconv.FormatInt(time.Now().Unix(), 10),
+		NonceStr:  util.GetRandomString(32),
+		Package:   rsp.Packages,
+		SignType:  "MD5",
+	}
+	paySign.PaySign = wechat.GetJsapiPaySign(cfg.AppIdApp, paySign.NonceStr, paySign.Package, wechat.SignType_MD5, paySign.Timestamp, cfg.ApiKey)
+	return paySign, err
+}
+
+func(w *weixinRepo) WalletTransfer(ctx context.Context, data *domain.WalletTransfer) error {
+	logger.GetLoggerWithBody(ctx, data).Info("企业付款")
+
+	cfg := config.GetWeixinPayCfg()
+	p12 := cfg.CertP12
+	certPem := cfg.CertPem
+	keyPem := cfg.KeyPem
+	_ = w.miniPayClient.AddCertPkcs12FilePath(p12)
+	_ = w.miniPayClient.AddCertPemFilePath(certPem, keyPem)
+	// 初始化参数结构体
+	bm := make(gopay.BodyMap)
+	// 公众号appid
+	bm.Set("mch_appid", cfg.AppIdApp)
+	// 商户号
+	bm.Set("mchid", cfg.MchId)
+	// 随机字符串，不长于32位
+	bm.Set("nonce_str", util.GetRandomString(32))
+	// 商户订单号
+	bm.Set("partner_trade_no", data.TradeNo)
+	// 用户openid
+	bm.Set("openid", data.OpenId)
+	// 不校验真实姓名
+	bm.Set("check_name", data.CheckName)
+	// 付款金额 分
+	bm.Set("amount", data.Amount)
+	bm.Set("desc", data.Desc)
+	bm.Set("spbill_create_ip", "47.100.86.135")
+
+	rsp, err := w.miniPayClient.Transfer(bm)
+	fmt.Print(rsp, err)
+	logger.GetLoggerWithBody(ctx, rsp).Info("企业付款反馈")
+
+	if err != nil || rsp.ResultCode != "SUCCESS" {
+		return errors.InternalServer("weixin", fmt.Sprintf("%v", err), "企业付款失败")
 	}
 
 	return err
@@ -82,7 +133,8 @@ func (w *weixinRepo) SendAppletRed(ctx context.Context, data *domain.AppletRed) 
 func (w *weixinRepo) Code2Session(ctx context.Context, code string) (*domain.Code2Session, error) {
 	res, err := w.miniClient.GetAuth().Code2Session(code)
 	if err != nil {
-		return nil, xerrors.Wrapf(err, "code [%s]", code)
+		//return nil, xerrors.Wrapf(err, "code [%s]", code)
+		return nil, errors.Newf(errors.Code(err), "weixin", "Code解密失败", "%+v", err)
 	}
 
 	return &domain.Code2Session{

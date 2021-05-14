@@ -32,4 +32,5 @@ type UserRepo interface {
 
 type UserUsecase interface {
 	Login(ctx context.Context, code string) (*User, error)
+	CheckUserIllegal(ctx context.Context, openId string) (error)
 }

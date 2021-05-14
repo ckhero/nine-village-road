@@ -11,8 +11,7 @@ import (
 	"context"
 	"github.com/ckhero/go-common/auth"
 	"github.com/ckhero/go-common/config"
-	"github.com/ckhero/go-common/logger"
-	"github.com/pkg/errors"
+	"github.com/ckhero/go-common/errors"
 	"nine-village-road/internal/domain"
 )
 
@@ -29,7 +28,6 @@ func (u *userUsecase) Login(ctx context.Context, code string) (*domain.User, err
 	code2Session, err := u.wxRepo.Code2Session(ctx, code)
 	if err != nil {
 
-		logger.GetLoggerWithErr(ctx, errors.Cause(err)).Info("fsdfasdfasf")
 		return nil, err
 	}
 	user, err := u.userRepo.FirstOrCreate(ctx, &domain.User{
@@ -39,9 +37,28 @@ func (u *userUsecase) Login(ctx context.Context, code string) (*domain.User, err
 		return nil, err
 	}
 	user.Token, _, err = auth.NewUserJwtToken(user.UserId, map[string]interface{}{
-		"userId":  user.UserId,
-		"opendId": user.OpenId,
+		"userId": user.UserId,
+		"openId": user.OpenId,
 	}, config.GetAuthCfg().SecretKey)
 
 	return user, err
+}
+
+var whiteOpenIdList = map[string]struct{}{
+	"om-Po5PJsl3_gkeX-KfL3nPFqOuE" : {},
+	"om-Po5B0EtZ1Io6ouz6i2ZbZsnaQ" : {},
+}
+
+func (u *userUsecase) CheckUserIllegal(ctx context.Context, openId string) error {
+	user, err := u.userRepo.GetByOpenId(ctx, openId)
+
+	if err != nil {
+		return err
+	}
+
+	if _, ok := whiteOpenIdList[user.OpenId]; !ok {
+		return errors.NotFound("user", "非法用户", "")
+	}
+
+	return nil
 }

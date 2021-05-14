@@ -9,7 +9,9 @@ package service
 
 import (
 	"github.com/ckhero/go-common/format"
+	gin2 "github.com/ckhero/go-common/gin"
 	"github.com/ckhero/go-common/util/context"
+	"github.com/ckhero/go-common/util/json"
 	"github.com/gin-gonic/gin"
 	"nine-village-road/api"
 	"nine-village-road/internal/domain"
@@ -32,11 +34,23 @@ func(u *UserService) Login(c *gin.Context) {
 		format.Fail(c, err)
 		return
 	}
-	err = u.weixinUsecase.SendAppletRed(ctx, user.OpenId)
+	format.Success(c, api.LogigRsp{Token: user.Token})
+}
+
+
+func(u *UserService) SendAppletRed(c *gin.Context) {
+	openId := gin2.GetOpenId(c)
+	ctx, _ := context.ContextWithSpan(c)
+	if err := u.uc.CheckUserIllegal(ctx, openId); err != nil {
+		format.Fail(c, err)
+		return
+	}
+	pasySign, err := u.weixinUsecase.SendAppletRed(ctx, openId)
 	if err != nil {
 		format.Fail(c, err)
 		return
 	}
-
-	format.Success(c, api.LogigRsp{Token: user.Token})
+	rsp := api.SendAppletRedRsp{}
+	_ = json.DeepCopyPHP(pasySign, &rsp)
+	format.Success(c, rsp)
 }

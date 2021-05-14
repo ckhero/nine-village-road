@@ -1,6 +1,8 @@
 package router
 
 import (
+	"github.com/ckhero/go-common/config"
+	gin2 "github.com/ckhero/go-common/gin"
 	"github.com/gin-gonic/gin"
 )
 
@@ -10,6 +12,10 @@ func registerWechatRouter(engine *gin.Engine) {
 	{
 		// denglu
 		group.GET("/login", handler.Login)
+		group.Use(
+			gin2.UserJwtAuthMiddleware(config.GetAuthCfg().SecretKey),
+		)
+		group.GET("/sendAppletRed", handler.SendAppletRed)
 	}
 }
 

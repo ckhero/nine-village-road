@@ -23,7 +23,7 @@ func NewWeixinUsecase(repo domain.WeixinRepo) domain.WeixinUsecase {
 	}
 }
 
-func(w *weixinUsecase) SendAppletRed(ctx context.Context, openId string) error {
+func(w *weixinUsecase) SendAppletRed(ctx context.Context, openId string) (*domain.AppletRedPaySign, error) {
 	return w.repo.SendAppletRed(ctx, &domain.AppletRed{
 		MchBillno:   uuid.GenUUID(),
 		MchName:    "测试",
@@ -34,4 +34,13 @@ func(w *weixinUsecase) SendAppletRed(ctx context.Context, openId string) error {
 		ActName:     "测试活动名字",
 		Remark:      "测试备注",
 	})
+
+	//return w.repo.WalletTransfer(ctx, &domain.WalletTransfer{
+	//	TradeNo:   uuid.GenUUID(),
+	//	OpenId:    openId,
+	//	CheckName: "NO_CHECK",
+	//	Amount:    30,
+	//	Desc:      "测试",
+	//})
 }
+

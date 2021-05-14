@@ -28,7 +28,7 @@ func (u *userRepo) GetByOpenId(ctx context.Context, openId string) (*domain.User
 	conn := u.database.RDB(ctx).Model(&domain.User{}).Where("open_id = ?", openId)
 	conn.First(&userInfo)
 	if conn.RowsAffected == 0 {
-		return nil, errors.NotFound("user not exist by openId", "openId [%s]", openId)
+		return nil, errors.NotFound("user", "用户不存在", openId)
 	}
 	return &userInfo, xerrors.Wrap(conn.Error, "find user by open id fail")
 }

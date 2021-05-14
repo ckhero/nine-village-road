@@ -10,3 +10,12 @@ package api
 type LogigRsp struct {
 	Token string `json:"token"`
 }
+
+
+type SendAppletRedRsp struct {
+	Timestamp string `json:"timestamp"`
+	NonceStr string `json:"nonce_str"`
+	Package string `json:"package"`
+	SignType string `json:"sign_type"`
+	PaySign string `json:"pay_sign"`
+}

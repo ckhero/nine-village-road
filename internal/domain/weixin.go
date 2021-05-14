@@ -20,6 +20,22 @@ type AppletRed struct {
 	Remark string
 }
 
+type AppletRedPaySign struct {
+	Timestamp string
+	NonceStr string
+	Package string
+	SignType string
+	PaySign string
+}
+
+type WalletTransfer struct {
+	TradeNo uint64
+	OpenId string
+	CheckName string
+	Amount uint64
+	Desc string
+}
+
 type Code2Session struct {
 	OpenId string
 	SessionKey string
@@ -27,10 +43,11 @@ type Code2Session struct {
 }
 
 type WeixinRepo interface {
-	SendAppletRed(ctx context.Context, data *AppletRed) error
+	SendAppletRed(ctx context.Context, data *AppletRed) (*AppletRedPaySign, error)
+	WalletTransfer(ctx context.Context, data *WalletTransfer) error
 	Code2Session(ctx context.Context, code string) (*Code2Session, error)
 }
 
 type WeixinUsecase interface {
-	SendAppletRed(ctx context.Context, openId string) error
+	SendAppletRed(ctx context.Context, openId string) (*AppletRedPaySign, error)
 }
