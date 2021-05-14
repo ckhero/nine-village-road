@@ -32,5 +32,5 @@ type WeixinRepo interface {
 }
 
 type WeixinUsecase interface {
-	SendAppletRed(ctx context.Context) error
+	SendAppletRed(ctx context.Context, openId string) error
 }

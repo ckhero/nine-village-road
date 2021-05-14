@@ -17,6 +17,7 @@ type User struct {
 	mysql.BaseEntity
 	UserId uint64    `gorm:"primaryKey;column:user_id;type:int(11) unsigned;not null"`
 	OpenId string `gorm:"unique;column:open_id;type:varchar(128);not null"`
+	Token string `gorm:"-";json:"token"`
 }
 
 func (*User) TableName() string {
@@ -30,5 +31,5 @@ type UserRepo interface {
 }
 
 type UserUsecase interface {
-	Login(ctx context.Context, code string) (string, error)
+	Login(ctx context.Context, code string) (*User, error)
 }

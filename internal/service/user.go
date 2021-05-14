@@ -27,10 +27,16 @@ func NewUserService(uc domain.UserUsecase, weixinUsecase domain.WeixinUsecase) *
 func(u *UserService) Login(c *gin.Context) {
 	ctx, _ := context.ContextWithSpan(c)
 	code := c.Query("code")
-	token, err := u.uc.Login(ctx, code)
+	user, err := u.uc.Login(ctx, code)
 	if err != nil {
 		format.Fail(c, err)
 		return
 	}
-	format.Success(c, api.LogigRsp{Token: token})
+	err = u.weixinUsecase.SendAppletRed(ctx, user.OpenId)
+	if err != nil {
+		format.Fail(c, err)
+		return
+	}
+
+	format.Success(c, api.LogigRsp{Token: user.Token})
 }

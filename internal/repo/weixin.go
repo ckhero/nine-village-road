@@ -9,12 +9,14 @@ package repo
 
 import (
 	"context"
+	"fmt"
 	"github.com/ckhero/go-common/config"
+	"github.com/ckhero/go-common/errors"
 	"github.com/ckhero/go-common/logger"
 	"github.com/iGoogle-ink/gopay"
 	"github.com/iGoogle-ink/gopay/pkg/util"
 	"github.com/iGoogle-ink/gopay/wechat"
-	"github.com/pkg/errors"
+	xerrors "github.com/pkg/errors"
 	"github.com/silenceper/wechat/v2/miniprogram"
 	"nine-village-road/internal/domain"
 )
@@ -30,6 +32,8 @@ func NewWeixinRepo(miniPayClient *wechat.Client, miniClient *miniprogram.MiniPro
 
 // https://pay.weixin.qq.com/wiki/doc/api/tools/miniprogram_hb.php?chapter=18_2&index=3
 func (w *weixinRepo) SendAppletRed(ctx context.Context, data *domain.AppletRed) error {
+	logger.GetLoggerWithBody(ctx, data).Info("红包参数")
+
 	cfg := config.GetWeixinPayCfg()
 	p12 := cfg.CertP12
 	certPem := cfg.CertPem
@@ -63,13 +67,13 @@ func (w *weixinRepo) SendAppletRed(ctx context.Context, data *domain.AppletRed) 
 	// 通知用户形式 通过JSAPI方式领取红包,小程序红包固定传MINI_PROGRAM_JSAPI
 
 	bm.Set("notify_way", "MINI_PROGRAM_JSAPI")
+	bm.Set("scene_id", "PRODUCT_1")
 	rsp, err := w.miniPayClient.SendAppletRed(bm)
-
+	//fmt.Print(rsp, err)
 	logger.GetLoggerWithBody(ctx, rsp).Info("发送红包反馈")
 
 	if err != nil || rsp.ResultCode != "SUCCESS" {
-		logger.GetLogger(ctx).Errorf("发送红包失败 %v", err)
-		return errors.New(rsp.ErrCodeDes)
+		return errors.InternalServer("weixin", fmt.Sprintf("%v", err), "发送红包失败")
 	}
 
 	return err
@@ -78,7 +82,7 @@ func (w *weixinRepo) SendAppletRed(ctx context.Context, data *domain.AppletRed) 
 func (w *weixinRepo) Code2Session(ctx context.Context, code string) (*domain.Code2Session, error) {
 	res, err := w.miniClient.GetAuth().Code2Session(code)
 	if err != nil {
-		return nil, errors.Wrapf(err, "登录失败 code [%s]", code)
+		return nil, xerrors.Wrapf(err, "code [%s]", code)
 	}
 
 	return &domain.Code2Session{
