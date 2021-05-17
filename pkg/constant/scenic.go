@@ -18,3 +18,15 @@ const (
 	// 悬崖索桥
 	ScenicXYSQ = "XYSQ"
 )
+
+const (
+	UserScenicStatusInvalid = "INVALID"
+	UserScenicStatusValid = "VALID"
+)
+
+var AllScenic = []string{
+	ScenicHLD,
+	ScenicCWF,
+	ScenicLHK,
+	ScenicXYSQ,
+}

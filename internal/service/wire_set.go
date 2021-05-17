@@ -22,7 +22,11 @@ var ProviderUserSet = wire.NewSet(NewUserService,
 	db.NewDatabase,
 	usecase.NewWeixinUsecase,
 	repo.NewWeixinRepo,
+	repo.NewUserRedPacketRepo,
 	wx.NewMiniPayClient,
 	wx.NewMiniClient,
 	config.GetWeixinPayCfg,
+
+	usecase.NewUserScenicUsecase,
+	repo.NewUserScenicRepo,
 	)

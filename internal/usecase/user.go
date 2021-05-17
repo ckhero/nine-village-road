@@ -13,6 +13,7 @@ import (
 	"github.com/ckhero/go-common/config"
 	"github.com/ckhero/go-common/errors"
 	"nine-village-road/internal/domain"
+	"nine-village-road/pkg/constant"
 )
 
 type userUsecase struct {
@@ -32,6 +33,7 @@ func (u *userUsecase) Login(ctx context.Context, code string) (*domain.User, err
 	}
 	user, err := u.userRepo.FirstOrCreate(ctx, &domain.User{
 		OpenId: code2Session.OpenId,
+		RecvStatus: constant.UserRecvStatusInit,
 	})
 	if err != nil {
 		return nil, err
@@ -52,19 +54,25 @@ var whiteOpenIdList = map[string]struct{}{
 	"om-Po5Km1HK4vunZCYrE2yPhbRM4" : {},
 	"om-Po5F11dYyhNLSZaS4k-UJ2teo" : {},
 	"om-Po5O7syEkF-ncaN4FEs72FhwY" : {},
+	"om-Po5FTg7RKP0YR-4eoy1eSwT2c" : {},
 }
 
 
-func (u *userUsecase) CheckUserIllegal(ctx context.Context, openId string) error {
+func (u *userUsecase) CheckUserIllegal(ctx context.Context, openId string) (*domain.User, error) {
 	user, err := u.userRepo.GetByOpenId(ctx, openId)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if _, ok := whiteOpenIdList[user.OpenId]; !ok {
-		return errors.NotFound("user", "非法用户", "")
+		return nil, errors.NotFound("user", "非法用户", "")
 	}
 
-	return nil
+	return user, nil
+}
+
+
+func (u *userUsecase) GetByOpenId(ctx context.Context, openId string) (*domain.User, error) {
+	return u.userRepo.GetByOpenId(ctx, openId)
 }

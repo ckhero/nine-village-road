@@ -16,6 +16,9 @@ func registerWechatRouter(engine *gin.Engine) {
 			gin2.UserJwtAuthMiddleware(config.GetAuthCfg().SecretKey),
 		)
 		group.GET("/sendAppletRed", handler.SendAppletRed)
+		group.GET("/walletTransfer", handler.WalletTransfer)
+		group.GET("/scan", handler.Scan)
+		group.GET("/listScenic", handler.ListScenic)
 	}
 }
 

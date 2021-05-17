@@ -12,6 +12,8 @@ const (
 	UserRedPacketInit = "INIT"
 	// 失败
 	UserRedPacketFail = "FAIL"
+	// 待领取的红包
+	UserRedPacketWaitRecv = "WAIT_RECV"
 	// 成功
 	UserRedPacketSucc = "SUCC"
 )

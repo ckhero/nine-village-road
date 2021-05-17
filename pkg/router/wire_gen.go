@@ -24,8 +24,11 @@ func newUserService() (*service.UserService, func(), error) {
 	miniProgram := wx.NewMiniClient()
 	weixinRepo := repo.NewWeixinRepo(client, miniProgram)
 	userUsecase := usecase.NewUserUsecase(userRepo, weixinRepo)
-	weixinUsecase := usecase.NewWeixinUsecase(weixinRepo)
-	userService := service.NewUserService(userUsecase, weixinUsecase)
+	userRedPacketRepo := repo.NewUserRedPacketRepo(database)
+	weixinUsecase := usecase.NewWeixinUsecase(weixinRepo, userRedPacketRepo, userRepo)
+	userScenicRepo := repo.NewUserScenicRepo(database)
+	userScenicUsecase := usecase.NewUserScenicUsecase(userScenicRepo)
+	userService := service.NewUserService(userUsecase, weixinUsecase, userScenicUsecase)
 	return userService, func() {
 	}, nil
 }

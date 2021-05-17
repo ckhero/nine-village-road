@@ -12,7 +12,10 @@ import (
 	"github.com/ckhero/go-common/db"
 	"github.com/ckhero/go-common/errors"
 	xerrors "github.com/pkg/errors"
+	"google.golang.org/grpc/codes"
+	"gorm.io/gorm"
 	"nine-village-road/internal/domain"
+	"nine-village-road/pkg/constant"
 )
 
 type userRepo struct {
@@ -36,4 +39,22 @@ func (u *userRepo) GetByOpenId(ctx context.Context, openId string) (*domain.User
 func (u *userRepo) FirstOrCreate(ctx context.Context, user *domain.User) (*domain.User, error) {
 	conn := u.database.RDB(ctx).FirstOrCreate(user, domain.User{OpenId: user.OpenId})
 	return user, xerrors.Wrap(conn.Error, "first or create user by open id fail")
+}
+
+func (u *userRepo) UpdateRecvStatusTx(ctx context.Context, userId uint64, oldRecvStatus, recvStatus string)  func(tx *gorm.DB) error {
+	return func(tx *gorm.DB) error {
+		if oldRecvStatus == constant.UserRecvStatusRecved {
+			return errors.Newf(codes.Unknown, "user", "更新用户领取状态失败", "[userId] %d [oldRecvStatus] %s [newRecvStatus] %s", userId, oldRecvStatus, recvStatus)
+		}
+
+		//if oldRecvStatus == constant.UserRecvStatusRecving {
+		//	return errors.Newf(codes.Unknown, "user", "请勿重复领取", "[userId] %d [oldRecvStatus] %s [newRecvStatus] %s", userId, oldRecvStatus, recvStatus)
+		//}
+
+		conn := u.database.RDB(ctx).Model(domain.User{}).
+			Where("user_id = ? and recv_status = ?", userId, oldRecvStatus).
+			Update("recv_status", recvStatus)
+
+		return conn.Error
+	}
 }

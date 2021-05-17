@@ -7,7 +7,9 @@
 
 package domain
 
-import "context"
+import (
+	"context"
+)
 
 type AppletRed struct {
 	MchBillno uint64
@@ -43,11 +45,13 @@ type Code2Session struct {
 }
 
 type WeixinRepo interface {
-	SendAppletRed(ctx context.Context, data *AppletRed) (*AppletRedPaySign, error)
-	WalletTransfer(ctx context.Context, data *WalletTransfer) error
+	SendAppletRed(ctx context.Context, data *AppletRed) (string, string, error)
+	AppletRedPaySign(ctx context.Context, pack string) (*AppletRedPaySign)
+	WalletTransfer(ctx context.Context, data *WalletTransfer) (string, error)
 	Code2Session(ctx context.Context, code string) (*Code2Session, error)
 }
 
 type WeixinUsecase interface {
-	SendAppletRed(ctx context.Context, openId string) (*AppletRedPaySign, error)
+	SendAppletRed(ctx context.Context, user *User) (*AppletRedPaySign, error)
+	WalletTransfer(ctx context.Context, user *User) error
 }

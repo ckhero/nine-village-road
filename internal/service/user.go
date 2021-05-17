@@ -18,15 +18,16 @@ import (
 )
 
 type UserService struct {
-	uc domain.UserUsecase
-	weixinUsecase domain.WeixinUsecase
+	uc                domain.UserUsecase
+	weixinUsecase     domain.WeixinUsecase
+	userScenicUsecase domain.UserScenicUsecase
 }
 
-func NewUserService(uc domain.UserUsecase, weixinUsecase domain.WeixinUsecase) *UserService {
-	return &UserService{uc:uc, weixinUsecase: weixinUsecase}
+func NewUserService(uc domain.UserUsecase, weixinUsecase domain.WeixinUsecase, userScenicUsecase domain.UserScenicUsecase) *UserService {
+	return &UserService{uc: uc, weixinUsecase: weixinUsecase, userScenicUsecase: userScenicUsecase}
 }
 
-func(u *UserService) Login(c *gin.Context) {
+func (u *UserService) Login(c *gin.Context) {
 	ctx, _ := context.ContextWithSpan(c)
 	code := c.Query("code")
 	user, err := u.uc.Login(ctx, code)
@@ -37,19 +38,18 @@ func(u *UserService) Login(c *gin.Context) {
 	format.Success(c, api.LogigRsp{Token: user.Token})
 }
 
-
-func(u *UserService) SendAppletRed(c *gin.Context) {
+func (u *UserService) SendAppletRed(c *gin.Context) {
 	openId := gin2.GetOpenId(c)
 	ctx, _ := context.ContextWithSpan(c)
 	// 校验用户
-	if err := u.uc.CheckUserIllegal(ctx, openId); err != nil {
+	user, err := u.uc.CheckUserIllegal(ctx, openId)
+	if err != nil {
 		format.Fail(c, err)
 		return
 	}
 	// TODO 校验是否可领取
-	// TODO 领取prepare
 	// TODO 领取
-	pasySign, err := u.weixinUsecase.SendAppletRed(ctx, openId)
+	pasySign, err := u.weixinUsecase.SendAppletRed(ctx, user)
 	if err != nil {
 		format.Fail(c, err)
 		return
@@ -58,4 +58,61 @@ func(u *UserService) SendAppletRed(c *gin.Context) {
 	rsp := api.SendAppletRedRsp{}
 	_ = json.DeepCopyPHP(pasySign, &rsp)
 	format.Success(c, rsp)
+}
+
+func (u *UserService) WalletTransfer(c *gin.Context) {
+	openId := gin2.GetOpenId(c)
+	ctx, _ := context.ContextWithSpan(c)
+	// 校验用户
+	user, err := u.uc.CheckUserIllegal(ctx, openId)
+	if err != nil {
+		format.Fail(c, err)
+		return
+	}
+	// TODO 校验是否可领取
+	if err := u.userScenicUsecase.CheckAllScenicScaned(ctx, user.UserId); err != nil {
+		format.Fail(c, err)
+		return
+	}
+	// TODO 领取
+	err = u.weixinUsecase.WalletTransfer(ctx, user)
+	if err != nil {
+		format.Fail(c, err)
+		return
+	}
+	// TODO confirm or cancel
+	format.Success(c, api.SendAppletRedRsp{})
+}
+
+// 扫码
+func (u *UserService) Scan(c *gin.Context) {
+	openId := gin2.GetOpenId(c)
+	ctx, _ := context.ContextWithSpan(c)
+	scenic := c.Query("scenic")
+	user, err := u.uc.CheckUserIllegal(ctx, openId)
+	if err != nil {
+		format.Fail(c, err)
+		return
+	}
+	_, err = u.userScenicUsecase.Scan(ctx, user, scenic)
+	if err != nil {
+		format.Fail(c, err)
+		return
+	}
+
+	format.Success(c, struct{}{})
+}
+
+// 查看打卡列表
+func (u *UserService) ListScenic(c *gin.Context) {
+	userId := gin2.GetUserId(c)
+	ctx, _ := context.ContextWithSpan(c)
+	list, err := u.userScenicUsecase.ListUserScenic(ctx, userId)
+	if err != nil {
+		format.Fail(c, err)
+		return
+	}
+	rspList := []*api.UserScenic{}
+	_ = json.DeepCopyPHP(list, &rspList)
+	format.Success(c, api.ListUserScenicRsp{List: rspList})
 }

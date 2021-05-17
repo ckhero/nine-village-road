@@ -37,7 +37,7 @@ func NewWeixinRepo(miniPayClient *wechat.Client, miniClient *miniprogram.MiniPro
 }
 
 // https://pay.weixin.qq.com/wiki/doc/api/tools/miniprogram_hb.php?chapter=18_2&index=3
-func (w *weixinRepo) SendAppletRed(ctx context.Context, data *domain.AppletRed) (*domain.AppletRedPaySign, error) {
+func (w *weixinRepo) SendAppletRed(ctx context.Context, data *domain.AppletRed) (string, string, error) {
 	logger.GetLoggerWithBody(ctx, data).Info("红包参数")
 
 	cfg := config.GetWeixinPayCfg()
@@ -83,20 +83,24 @@ func (w *weixinRepo) SendAppletRed(ctx context.Context, data *domain.AppletRed) 
 		if rsp != nil {
 			msg = rsp.ReturnMsg
 		}
-		return nil, errors.InternalServer("weixin", msg, "发送红包失败")
+		return "", msg, errors.InternalServer("weixin", msg, "发送红包失败")
 	}
+	return url.QueryEscape(rsp.Packages), rsp.ReturnMsg, nil
+}
 
+func (w *weixinRepo) AppletRedPaySign(ctx context.Context,  pack string) (*domain.AppletRedPaySign) {
+	cfg := config.GetWeixinPayCfg()
 	paySign := &domain.AppletRedPaySign{
 		Timestamp: strconv.FormatInt(time.Now().Unix(), 10),
 		NonceStr:  util.GetRandomString(32),
-		Package:   url.QueryEscape(rsp.Packages),
+		Package:   pack,
 		SignType:  "MD5",
 	}
-	paySign.PaySign = PaySign(cfg.AppIdApp, paySign.NonceStr, paySign.Package, wechat.SignType_MD5, paySign.Timestamp, cfg.ApiKey)
-	return paySign, err
+	paySign.PaySign = paySignV1(cfg.AppIdApp, paySign.NonceStr, paySign.Package, wechat.SignType_MD5, paySign.Timestamp, cfg.ApiKey)
+	return paySign
 }
 
-func PaySign(appId, nonceStr, packages, signType, timeStamp, apiKey string) string{
+func paySignV1(appId, nonceStr, packages, signType, timeStamp, apiKey string) string {
 	var (
 		buffer strings.Builder
 		h      hash.Hash
@@ -116,8 +120,7 @@ func PaySign(appId, nonceStr, packages, signType, timeStamp, apiKey string) stri
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-
-func(w *weixinRepo) WalletTransfer(ctx context.Context, data *domain.WalletTransfer) error {
+func (w *weixinRepo) WalletTransfer(ctx context.Context, data *domain.WalletTransfer) (string, error) {
 	logger.GetLoggerWithBody(ctx, data).Info("企业付款")
 
 	cfg := config.GetWeixinPayCfg()
@@ -150,10 +153,13 @@ func(w *weixinRepo) WalletTransfer(ctx context.Context, data *domain.WalletTrans
 	logger.GetLoggerWithBody(ctx, rsp).Info("企业付款反馈")
 
 	if err != nil || rsp.ResultCode != "SUCCESS" {
-		return errors.InternalServer("weixin", fmt.Sprintf("%v", err), "企业付款失败")
+		msg := "红包发送失败"
+		if rsp != nil {
+			msg = rsp.ReturnMsg
+		}
+		return msg, errors.InternalServer("weixin", fmt.Sprintf("%v", err), "企业付款失败")
 	}
-
-	return err
+	return rsp.ReturnMsg, nil
 }
 
 func (w *weixinRepo) Code2Session(ctx context.Context, code string) (*domain.Code2Session, error) {

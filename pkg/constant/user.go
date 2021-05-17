@@ -14,7 +14,7 @@ const (
 	// 未领取
 	UserRecvStatusUnRecv = "UNRECV"
 	// 领取中
-	UserRecvStatusUnRecving = "RECVING"
+	UserRecvStatusRecving = "RECVING"
 	// 已领取
 	UserRecvStatusRecved = "RECVED"
 )
