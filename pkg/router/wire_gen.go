@@ -16,6 +16,20 @@ import (
 
 // Injectors from wire.go:
 
+func newWechatService() (*service.WechatService, func(), error) {
+	weixinPay := config.GetWeixinPayCfg()
+	client := wx.NewMiniPayClient(weixinPay)
+	miniProgram := wx.NewMiniClient()
+	weixinRepo := repo.NewWeixinRepo(client, miniProgram)
+	database := db.NewDatabase()
+	userRedPacketRepo := repo.NewUserRedPacketRepo(database)
+	userRepo := repo.NewUserRepo(database)
+	weixinUsecase := usecase.NewWeixinUsecase(weixinRepo, userRedPacketRepo, userRepo)
+	wechatService := service.NewWechatService(weixinUsecase)
+	return wechatService, func() {
+	}, nil
+}
+
 func newUserService() (*service.UserService, func(), error) {
 	database := db.NewDatabase()
 	userRepo := repo.NewUserRepo(database)

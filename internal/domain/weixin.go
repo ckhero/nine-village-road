@@ -49,9 +49,11 @@ type WeixinRepo interface {
 	AppletRedPaySign(ctx context.Context, pack string) (*AppletRedPaySign)
 	WalletTransfer(ctx context.Context, data *WalletTransfer) (string, error)
 	Code2Session(ctx context.Context, code string) (*Code2Session, error)
+	QRCode(ctx context.Context, scenic string) ([]byte, error)
 }
 
 type WeixinUsecase interface {
 	SendAppletRed(ctx context.Context, user *User) (*AppletRedPaySign, error)
 	WalletTransfer(ctx context.Context, user *User) error
+	QRCode(ctx context.Context, scenic string) ([]byte, error)
 }

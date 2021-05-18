@@ -15,6 +15,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"nine-village-road/api"
 	"nine-village-road/internal/domain"
+	"sync"
 )
 
 type UserService struct {
@@ -60,7 +61,9 @@ func (u *UserService) SendAppletRed(c *gin.Context) {
 	format.Success(c, rsp)
 }
 
+var mu sync.Mutex
 func (u *UserService) WalletTransfer(c *gin.Context) {
+	mu.Lock()
 	openId := gin2.GetOpenId(c)
 	ctx, _ := context.ContextWithSpan(c)
 	// 校验用户

@@ -143,3 +143,6 @@ func(w *weixinUsecase) WalletTransfer(ctx context.Context, user *domain.User) (e
 	return nil
 }
 
+func (w *weixinUsecase) QRCode(ctx context.Context, scenic string) ([]byte, error) {
+	return w.repo.QRCode(ctx, scenic)
+}

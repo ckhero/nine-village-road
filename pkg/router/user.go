@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func registerWechatRouter(engine *gin.Engine) {
+func registerUserRouter(engine *gin.Engine) {
 	handler, _, _ := newUserService()
 	group := engine.Group("/api/v1/user")
 	{

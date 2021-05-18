@@ -30,3 +30,15 @@ var ProviderUserSet = wire.NewSet(NewUserService,
 	usecase.NewUserScenicUsecase,
 	repo.NewUserScenicRepo,
 	)
+
+var ProviderWechatSet = wire.NewSet(NewWechatService,
+	usecase.NewWeixinUsecase,
+	db.NewDatabase,
+	repo.NewUserRepo,
+
+	repo.NewWeixinRepo,
+	repo.NewUserRedPacketRepo,
+	wx.NewMiniPayClient,
+	wx.NewMiniClient,
+	config.GetWeixinPayCfg,
+)

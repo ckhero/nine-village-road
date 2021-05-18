@@ -19,6 +19,7 @@ import (
 	"github.com/iGoogle-ink/gopay/pkg/util"
 	"github.com/iGoogle-ink/gopay/wechat"
 	"github.com/silenceper/wechat/v2/miniprogram"
+	"github.com/silenceper/wechat/v2/miniprogram/qrcode"
 	"hash"
 	"net/url"
 	"nine-village-road/internal/domain"
@@ -174,4 +175,16 @@ func (w *weixinRepo) Code2Session(ctx context.Context, code string) (*domain.Cod
 		SessionKey: res.SessionKey,
 		UnionId:    res.UnionID,
 	}, nil
+}
+
+func (w *weixinRepo) QRCode(ctx context.Context, scenic string) ([]byte, error) {
+	res, err := w.miniClient.GetQRCode().GetWXACodeUnlimit(qrcode.QRCoder{
+		Scene:     scenic,
+	})
+	if err != nil {
+		//return nil, xerrors.Wrapf(err, "code [%s]", code)
+		return nil, errors.Newf(errors.Code(err), "weixin", "二维码生成失败", "%+v", err)
+	}
+
+	return res, nil
 }

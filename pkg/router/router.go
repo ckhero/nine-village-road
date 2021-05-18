@@ -10,6 +10,7 @@ func RegisterRouter() web.RegisterRouter {
 	return func(engine *gin.Engine) {
 
 		registerWechatRouter(engine)
+		registerUserRouter(engine)
 
 	}
 }
