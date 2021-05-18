@@ -9,3 +9,6 @@ http:
   port: 7002
 logger:
   level: debug
+redPacketLimit:
+  amount: 10000
+  recvNum: 100

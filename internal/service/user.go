@@ -63,7 +63,6 @@ func (u *UserService) SendAppletRed(c *gin.Context) {
 
 var mu sync.Mutex
 func (u *UserService) WalletTransfer(c *gin.Context) {
-	mu.Lock()
 	openId := gin2.GetOpenId(c)
 	ctx, _ := context.ContextWithSpan(c)
 	// 校验用户
@@ -92,7 +91,7 @@ func (u *UserService) Scan(c *gin.Context) {
 	openId := gin2.GetOpenId(c)
 	ctx, _ := context.ContextWithSpan(c)
 	scenic := c.Query("scenic")
-	user, err := u.uc.CheckUserIllegal(ctx, openId)
+	user, err := u.uc.GetByOpenId(ctx, openId)
 	if err != nil {
 		format.Fail(c, err)
 		return

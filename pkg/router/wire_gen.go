@@ -24,7 +24,8 @@ func newWechatService() (*service.WechatService, func(), error) {
 	database := db.NewDatabase()
 	userRedPacketRepo := repo.NewUserRedPacketRepo(database)
 	userRepo := repo.NewUserRepo(database)
-	weixinUsecase := usecase.NewWeixinUsecase(weixinRepo, userRedPacketRepo, userRepo)
+	redPacketLimitRepo := repo.NewRedPacketLimitRepo(database)
+	weixinUsecase := usecase.NewWeixinUsecase(weixinRepo, userRedPacketRepo, userRepo, redPacketLimitRepo)
 	wechatService := service.NewWechatService(weixinUsecase)
 	return wechatService, func() {
 	}, nil
@@ -39,7 +40,8 @@ func newUserService() (*service.UserService, func(), error) {
 	weixinRepo := repo.NewWeixinRepo(client, miniProgram)
 	userUsecase := usecase.NewUserUsecase(userRepo, weixinRepo)
 	userRedPacketRepo := repo.NewUserRedPacketRepo(database)
-	weixinUsecase := usecase.NewWeixinUsecase(weixinRepo, userRedPacketRepo, userRepo)
+	redPacketLimitRepo := repo.NewRedPacketLimitRepo(database)
+	weixinUsecase := usecase.NewWeixinUsecase(weixinRepo, userRedPacketRepo, userRepo, redPacketLimitRepo)
 	userScenicRepo := repo.NewUserScenicRepo(database)
 	userScenicUsecase := usecase.NewUserScenicUsecase(userScenicRepo)
 	userService := service.NewUserService(userUsecase, weixinUsecase, userScenicUsecase)

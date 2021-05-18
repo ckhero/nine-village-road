@@ -12,6 +12,7 @@ import (
 	"github.com/ckhero/go-common/auth"
 	"github.com/ckhero/go-common/config"
 	"github.com/ckhero/go-common/errors"
+	"google.golang.org/grpc/codes"
 	"nine-village-road/internal/domain"
 	"nine-village-road/pkg/constant"
 )
@@ -46,18 +47,6 @@ func (u *userUsecase) Login(ctx context.Context, code string) (*domain.User, err
 	return user, err
 }
 
-var whiteOpenIdList = map[string]struct{}{
-	"om-Po5PJsl3_gkeX-KfL3nPFqOuE" : {},
-	"om-Po5B0EtZ1Io6ouz6i2ZbZsnaQ" : {},
-	"om-Po5FpkMGCD2EHGPgrzya5Rhyk" : {},
-	"om-Po5PV5GjUGH-5Mn40YrGyhWzE" : {},
-	"om-Po5Km1HK4vunZCYrE2yPhbRM4" : {},
-	"om-Po5F11dYyhNLSZaS4k-UJ2teo" : {},
-	"om-Po5O7syEkF-ncaN4FEs72FhwY" : {},
-	"om-Po5FTg7RKP0YR-4eoy1eSwT2c" : {},
-}
-
-
 func (u *userUsecase) CheckUserIllegal(ctx context.Context, openId string) (*domain.User, error) {
 	user, err := u.userRepo.GetByOpenId(ctx, openId)
 
@@ -65,10 +54,9 @@ func (u *userUsecase) CheckUserIllegal(ctx context.Context, openId string) (*dom
 		return nil, err
 	}
 
-	if _, ok := whiteOpenIdList[user.OpenId]; !ok {
-		return nil, errors.NotFound("user", "非法用户", "")
+	if user.IsRecved() {
+		return nil, errors.Newf(codes.Unknown, "user", "已经领取成功，无法重复领取", "%d", user.UserId)
 	}
-
 	return user, nil
 }
 

@@ -11,25 +11,28 @@ import (
 	"context"
 	"github.com/ckhero/go-common/errors"
 	"github.com/ckhero/go-common/util/uuid"
+	"google.golang.org/grpc/codes"
 	"nine-village-road/internal/domain"
 	"nine-village-road/pkg/constant"
 )
 
 type weixinUsecase struct {
-	repo domain.WeixinRepo
-	redPacketRepo domain.UserRedPacketRepo
-	uerRepo domain.UserRepo
+	repo           domain.WeixinRepo
+	redPacketRepo  domain.UserRedPacketRepo
+	uerRepo        domain.UserRepo
+	redPacketLimitRepo domain.RedPacketLimitRepo
 }
 
-func NewWeixinUsecase(repo domain.WeixinRepo, redPacketRepo domain.UserRedPacketRepo, uerRepo domain.UserRepo) domain.WeixinUsecase {
+func NewWeixinUsecase(repo domain.WeixinRepo, redPacketRepo domain.UserRedPacketRepo, uerRepo domain.UserRepo, redPacketLimitRepo domain.RedPacketLimitRepo) domain.WeixinUsecase {
 	return &weixinUsecase{
-		repo: repo,
-		redPacketRepo: redPacketRepo,
-		uerRepo: uerRepo,
+		repo:           repo,
+		redPacketRepo:  redPacketRepo,
+		uerRepo:        uerRepo,
+		redPacketLimitRepo: redPacketLimitRepo,
 	}
 }
 
-func(w *weixinUsecase) SendAppletRed(ctx context.Context, user *domain.User) (*domain.AppletRedPaySign, error) {
+func (w *weixinUsecase) SendAppletRed(ctx context.Context, user *domain.User) (*domain.AppletRedPaySign, error) {
 
 	var redPacket *domain.UserRedPacket
 	var err error
@@ -58,7 +61,7 @@ func(w *weixinUsecase) SendAppletRed(ctx context.Context, user *domain.User) (*d
 		var err error
 		redPacket.Package, redPacket.Remark, err = w.repo.SendAppletRed(ctx, &domain.AppletRed{
 			MchBillno:   redPacket.TradeNo,
-			MchName:    "测试",
+			MchName:     "测试",
 			OpenId:      redPacket.OpenId,
 			TotalAmount: redPacket.Amount,
 			TotalNum:    1,
@@ -69,8 +72,9 @@ func(w *weixinUsecase) SendAppletRed(ctx context.Context, user *domain.User) (*d
 		// 领取失败
 		if err != nil {
 			if err := w.redPacketRepo.HandleRedPacket(ctx,
-				w.uerRepo.UpdateRecvStatusTx(ctx, user.UserId,  constant.UserRecvStatusRecving, constant.UserRecvStatusInit),
+				w.uerRepo.UpdateRecvStatusTx(ctx, user.UserId, constant.UserRecvStatusRecving, constant.UserRecvStatusInit),
 				w.redPacketRepo.CancelTx(ctx, redPacket),
+				w.redPacketLimitRepo.UpdateTx(ctx, -int(redPacket.Amount), -constant.LimitDefaultNum),
 			); err != nil {
 				return nil, err
 			}
@@ -88,12 +92,12 @@ func(w *weixinUsecase) SendAppletRed(ctx context.Context, user *domain.User) (*d
 	return res, nil
 }
 
-func(w *weixinUsecase) WalletTransfer(ctx context.Context, user *domain.User) (error) {
+func (w *weixinUsecase) WalletTransfer(ctx context.Context, user *domain.User) error {
 	var redPacket *domain.UserRedPacket
 	var err error
 	if user.IsRecving() {
 		redPacket, err = w.redPacketRepo.GetRedPacketByStatus(ctx, user.UserId, constant.UserRecvStatusRecved)
-		if err !=nil && !errors.IsNotFound(err) {
+		if err != nil && !errors.IsNotFound(err) {
 			return err
 		}
 	}
@@ -110,6 +114,7 @@ func(w *weixinUsecase) WalletTransfer(ctx context.Context, user *domain.User) (e
 		if err := w.redPacketRepo.HandleRedPacket(ctx,
 			w.uerRepo.UpdateRecvStatusTx(ctx, user.UserId, user.RecvStatus, constant.UserRecvStatusRecving),
 			w.redPacketRepo.CreateTx(ctx, redPacket),
+			w.redPacketLimitRepo.UpdateTx(ctx, int(redPacket.Amount), constant.LimitDefaultNum),
 		); err != nil {
 			return err
 		}
@@ -124,18 +129,19 @@ func(w *weixinUsecase) WalletTransfer(ctx context.Context, user *domain.User) (e
 		// 领取失败
 		if err != nil {
 			if err := w.redPacketRepo.HandleRedPacket(ctx,
-				w.uerRepo.UpdateRecvStatusTx(ctx, user.UserId,  constant.UserRecvStatusRecving, constant.UserRecvStatusInit),
+				w.uerRepo.UpdateRecvStatusTx(ctx, user.UserId, constant.UserRecvStatusRecving, constant.UserRecvStatusInit),
 				w.redPacketRepo.CancelTx(ctx, redPacket),
+				w.redPacketLimitRepo.UpdateTx(ctx, -int(redPacket.Amount), -constant.LimitDefaultNum),
 			); err != nil {
 				return err
 			}
-			return err
+			return errors.Newf(codes.Unknown, "weixin", "红包领取失败", "userid [%d] openId [%s]", user.UserId, user.OpenId)
 		}
 	}
 	// 领取成功
 
 	if err := w.redPacketRepo.HandleRedPacket(ctx,
-		w.uerRepo.UpdateRecvStatusTx(ctx, user.UserId,  constant.UserRecvStatusRecving, constant.UserRecvStatusRecved),
+		w.uerRepo.UpdateRecvStatusTx(ctx, user.UserId, constant.UserRecvStatusRecving, constant.UserRecvStatusRecved),
 		w.redPacketRepo.ConfirmTx(ctx, redPacket),
 	); err != nil {
 		return err

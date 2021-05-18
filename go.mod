@@ -8,6 +8,7 @@ require (
 	github.com/gin-gonic/gin v1.7.1
 	github.com/google/wire v0.5.0
 	github.com/iGoogle-ink/gopay v1.5.39
+	github.com/jinzhu/now v1.1.2
 	github.com/pkg/errors v0.8.1
 	github.com/silenceper/wechat/v2 v2.0.6
 	github.com/thoas/go-funk v0.8.0

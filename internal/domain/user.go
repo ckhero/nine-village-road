@@ -31,6 +31,10 @@ func (u *User) IsRecving() bool {
 	return u.RecvStatus == constant.UserRecvStatusRecving
 }
 
+func (u *User) IsRecved() bool {
+	return u.RecvStatus == constant.UserRecvStatusRecved
+}
+
 type UserRepo interface {
 	GetByOpenId(ctx context.Context, openId string) (*User, error)
 	FirstOrCreate(ctx context.Context, user *User) (*User, error)
