@@ -30,7 +30,7 @@ func (u *userUsecase) Login(ctx context.Context, code string) (*domain.User, err
 	code2Session, err := u.wxRepo.Code2Session(ctx, code)
 	if err != nil {
 
-		return nil, err
+		return nil, errors.Newf(codes.Unauthenticated, "user", "code失效", "%v", err)
 	}
 	user, err := u.userRepo.FirstOrCreate(ctx, &domain.User{
 		OpenId: code2Session.OpenId,

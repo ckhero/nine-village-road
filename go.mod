@@ -16,8 +16,9 @@ require (
 	github.com/pelletier/go-toml v1.9.1 // indirect
 	github.com/pilu/config v0.0.0-20131214182432-3eb99e6c0b9a // indirect
 	github.com/pilu/fresh v0.0.0-20190826141211-0fa698148017 // indirect
-	github.com/pkg/errors v0.8.1
+	github.com/pkg/errors v0.9.1
 	github.com/silenceper/wechat/v2 v2.0.6
+	github.com/tal-tech/go-zero v1.1.7 // indirect
 	github.com/thoas/go-funk v0.8.0
 	golang.org/x/sys v0.0.0-20210521203332-0cec03c779c1 // indirect
 	google.golang.org/grpc v1.36.1
