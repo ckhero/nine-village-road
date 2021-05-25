@@ -34,7 +34,6 @@ func Run(cfg *config.Config) {
 
 	// Mechanical domain.
 	errc := make(chan error)
-
 	// init plugins
 	px := plugin.NewPluginCtx(errc,
 		plugin.NewPluginMysql(),

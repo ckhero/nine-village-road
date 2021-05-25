@@ -8,6 +8,7 @@
 package service
 
 import (
+	"fmt"
 	"github.com/ckhero/go-common/format"
 	gin2 "github.com/ckhero/go-common/gin"
 	"github.com/ckhero/go-common/util/context"
@@ -30,6 +31,7 @@ func NewUserService(uc domain.UserUsecase, weixinUsecase domain.WeixinUsecase, u
 
 func (u *UserService) Login(c *gin.Context) {
 	ctx, _ := context.ContextWithSpan(c)
+	fmt.Println("3333")
 	code := c.Query("code")
 	user, err := u.uc.Login(ctx, code)
 	if err != nil {
