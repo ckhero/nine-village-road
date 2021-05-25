@@ -31,7 +31,6 @@ func NewUserService(uc domain.UserUsecase, weixinUsecase domain.WeixinUsecase, u
 
 func (u *UserService) Login(c *gin.Context) {
 	ctx, _ := context.ContextWithSpan(c)
-	fmt.Println("3333")
 	code := c.Query("code")
 	user, err := u.uc.Login(ctx, code)
 	if err != nil {
