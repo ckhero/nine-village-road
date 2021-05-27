@@ -113,14 +113,14 @@ func (w *weixinUsecase) WalletTransfer(ctx context.Context, user *domain.User) (
 			OpenId:          user.OpenId,
 			TradeNo:         uuid.GenUUID(),
 			Amount:          rand_amount.GetRandAmount(map[uint64]uint64{
-				110 : 22,
-				220 : 15,
-				330 : 15,
-				550 : 15,
-				660 : 15,
-				880 : 10,
-				990 : 5,
-				8800 : 2,
+				110 : 46,
+				220 : 30,
+				330 : 30,
+				550 : 30,
+				660 : 30,
+				880 : 20,
+				990 : 10,
+				8800 : 1,
 			}),
 		}
 		// 创建数据

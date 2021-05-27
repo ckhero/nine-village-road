@@ -14,13 +14,13 @@ import (
 
 func TestGetRandAmount(t *testing.T) {
 	data := map[uint64]uint64{
-		110 : 98,
-		220 : 68,
-		330 : 10,
-		550 : 10,
-		660 : 7,
-		880 : 5,
-		990 : 5,
+		110 : 46,
+		220 : 30,
+		330 : 30,
+		550 : 30,
+		660 : 30,
+		880 : 20,
+		990 : 10,
 		8800 : 1,
 	}
 
@@ -35,7 +35,7 @@ func TestGetRandAmount(t *testing.T) {
 		8800 : 0,
 		30 : 0,
 	}
-	for i := 0; i < 56000; i ++ {
+	for i := 0; i < 60; i ++ {
 		t := GetRandAmount(data)
 		res[t] += 1
 	}
