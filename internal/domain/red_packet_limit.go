@@ -22,7 +22,8 @@ type RedPacketLimit struct {
 	LeftAmount       uint64 `gorm:"column:left_amount;type:bigint(20);not null"`
 	RecvNum          uint64 `gorm:"column:recv_num;type:bigint(20);not null"`
 	LeftRecvNum      uint64 `gorm:"column:left_recv_num;type:bigint(20);not null"`
-	Date             string `gorm:"column:date;type:varchar(32);not null"`
+	StartDate        string `gorm:"column:start_date;type:varchar(32);not null"`
+	EndDate          string `gorm:"column:end_date;type:varchar(32);not null"`
 }
 
 func (*RedPacketLimit) TableName() string {

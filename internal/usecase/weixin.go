@@ -9,11 +9,15 @@ package usecase
 
 import (
 	"context"
+	"encoding/base64"
 	"github.com/ckhero/go-common/errors"
 	"github.com/ckhero/go-common/util/uuid"
 	"google.golang.org/grpc/codes"
+	"io/ioutil"
 	"nine-village-road/internal/domain"
 	"nine-village-road/pkg/constant"
+	"nine-village-road/pkg/rand_amount"
+	"os"
 )
 
 type weixinUsecase struct {
@@ -92,13 +96,13 @@ func (w *weixinUsecase) SendAppletRed(ctx context.Context, user *domain.User) (*
 	return res, nil
 }
 
-func (w *weixinUsecase) WalletTransfer(ctx context.Context, user *domain.User) error {
+func (w *weixinUsecase) WalletTransfer(ctx context.Context, user *domain.User) (*domain.UserRedPacket, error) {
 	var redPacket *domain.UserRedPacket
 	var err error
 	if user.IsRecving() {
 		redPacket, err = w.redPacketRepo.GetRedPacketByStatus(ctx, user.UserId, constant.UserRecvStatusRecved)
 		if err != nil && !errors.IsNotFound(err) {
-			return err
+			return nil, err
 		}
 	}
 	// 不存在记录
@@ -108,7 +112,7 @@ func (w *weixinUsecase) WalletTransfer(ctx context.Context, user *domain.User) e
 			UserId:          user.UserId,
 			OpenId:          user.OpenId,
 			TradeNo:         uuid.GenUUID(),
-			Amount:          30,
+			Amount:          rand_amount.GetRandAmount(map[uint64]uint64{}),
 		}
 		// 创建数据
 		if err := w.redPacketRepo.HandleRedPacket(ctx,
@@ -116,7 +120,7 @@ func (w *weixinUsecase) WalletTransfer(ctx context.Context, user *domain.User) e
 			w.redPacketRepo.CreateTx(ctx, redPacket),
 			w.redPacketLimitRepo.UpdateTx(ctx, int(redPacket.Amount), constant.LimitDefaultNum),
 		); err != nil {
-			return err
+			return nil, err
 		}
 		var err error
 		redPacket.Remark, err = w.repo.WalletTransfer(ctx, &domain.WalletTransfer{
@@ -133,9 +137,9 @@ func (w *weixinUsecase) WalletTransfer(ctx context.Context, user *domain.User) e
 				w.redPacketRepo.CancelTx(ctx, redPacket),
 				w.redPacketLimitRepo.UpdateTx(ctx, -int(redPacket.Amount), -constant.LimitDefaultNum),
 			); err != nil {
-				return err
+				return nil, err
 			}
-			return errors.Newf(codes.Unknown, "weixin", "红包领取失败", "userid [%d] openId [%s]", user.UserId, user.OpenId)
+			return nil, errors.Newf(codes.Unknown, "weixin", "红包领取失败", "userid [%d] openId [%s]", user.UserId, user.OpenId)
 		}
 	}
 	// 领取成功
@@ -144,11 +148,31 @@ func (w *weixinUsecase) WalletTransfer(ctx context.Context, user *domain.User) e
 		w.uerRepo.UpdateRecvStatusTx(ctx, user.UserId, constant.UserRecvStatusRecving, constant.UserRecvStatusRecved),
 		w.redPacketRepo.ConfirmTx(ctx, redPacket),
 	); err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return redPacket, nil
 }
 
 func (w *weixinUsecase) QRCode(ctx context.Context, scenic string) ([]byte, error) {
-	return w.repo.QRCode(ctx, scenic)
+	qrCode, err := w.repo.QRCode(ctx, scenic)
+	if err != nil {
+		return nil, err
+	}
+	// base64 > png
+	sourcestring := base64.StdEncoding.EncodeToString(qrCode)
+	tmpPath := "./qr_code/a.png.txt"
+	//写入临时文件
+	_ = ioutil.WriteFile(tmpPath, []byte(sourcestring), 0667)
+	//读取临时文件
+	cc, _ := ioutil.ReadFile(tmpPath)
+
+	//解压
+	dist, _ := base64.StdEncoding.DecodeString(string(cc))
+	//写入新文件
+	f, _ := os.OpenFile("./qr_code/" + scenic + ".png", os.O_RDWR|os.O_CREATE, os.ModePerm)
+	defer func() {
+		_ = f.Close()
+	}()
+	_, _ = f.Write(dist)
+	return qrCode, nil
 }

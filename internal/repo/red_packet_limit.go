@@ -44,7 +44,8 @@ func (rl *redPacketLimitRepo) UpdateTx(ctx context.Context, amount, num int) fun
 		currDay := now.BeginningOfDay().Format("2006-01-02")
 		conn = tx.Model(domain.RedPacketLimit{}).
 			Where("limit_type = ?", constant.LimitTypeDay).
-			Where("date = ?", currDay).
+			Where("start_date >= ?", currDay).
+			Where("end_date >= ?", currDay).
 			Updates(map[string]interface{}{
 				"left_amount":   gorm.Expr("left_amount - ?", amount),
 				"left_recv_num": gorm.Expr("left_recv_num - ?", num),
@@ -64,7 +65,8 @@ func (rl *redPacketLimitRepo) UpdateTx(ctx context.Context, amount, num int) fun
 				LeftAmount:       cfg.Amount - uint64(amount),
 				RecvNum:          cfg.RecvNum,
 				LeftRecvNum:      cfg.RecvNum - uint64(num),
-				Date:             currDay,
+				StartDate:        currDay,
+				EndDate:          currDay,
 			})
 			if conn.Error != nil {
 				return errors.Newf(codes.Unknown, "red packet limit", "红包配置创建失败", "")

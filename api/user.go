@@ -19,6 +19,10 @@ type SendAppletRedRsp struct {
 	PaySign string `json:"pay_sign"`
 }
 
+type WalletTransferRsp struct {
+	Amount uint64 `json:"amount"`
+}
+
 type UserScenic struct {
 	Scenic string `json:"scenic"`
 }

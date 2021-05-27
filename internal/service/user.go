@@ -77,13 +77,15 @@ func (u *UserService) WalletTransfer(c *gin.Context) {
 		return
 	}
 	// TODO 领取
-	err = u.weixinUsecase.WalletTransfer(ctx, user)
+	redpacket, err := u.weixinUsecase.WalletTransfer(ctx, user)
 	if err != nil {
 		format.Fail(c, err)
 		return
 	}
 	// TODO confirm or cancel
-	format.Success(c, api.SendAppletRedRsp{})
+	format.Success(c, api.WalletTransferRsp{
+		Amount:    redpacket.Amount,
+	})
 }
 
 // 扫码

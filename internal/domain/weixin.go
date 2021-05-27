@@ -54,6 +54,6 @@ type WeixinRepo interface {
 
 type WeixinUsecase interface {
 	SendAppletRed(ctx context.Context, user *User) (*AppletRedPaySign, error)
-	WalletTransfer(ctx context.Context, user *User) error
+	WalletTransfer(ctx context.Context, user *User) (*UserRedPacket, error)
 	QRCode(ctx context.Context, scenic string) ([]byte, error)
 }

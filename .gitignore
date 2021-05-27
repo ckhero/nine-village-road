@@ -23,3 +23,4 @@ deploy/secret.conf
 deploy/config.conf
 deploy/scp_nine.sh
 tmp
+qr_code

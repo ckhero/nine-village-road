@@ -89,7 +89,7 @@ func (w *weixinRepo) SendAppletRed(ctx context.Context, data *domain.AppletRed) 
 	return url.QueryEscape(rsp.Packages), rsp.ReturnMsg, nil
 }
 
-func (w *weixinRepo) AppletRedPaySign(ctx context.Context,  pack string) (*domain.AppletRedPaySign) {
+func (w *weixinRepo) AppletRedPaySign(ctx context.Context, pack string) *domain.AppletRedPaySign {
 	cfg := config.GetWeixinPayCfg()
 	paySign := &domain.AppletRedPaySign{
 		Timestamp: strconv.FormatInt(time.Now().Unix(), 10),
@@ -179,7 +179,9 @@ func (w *weixinRepo) Code2Session(ctx context.Context, code string) (*domain.Cod
 
 func (w *weixinRepo) QRCode(ctx context.Context, scenic string) ([]byte, error) {
 	res, err := w.miniClient.GetQRCode().GetWXACodeUnlimit(qrcode.QRCoder{
+		Width:     500,
 		Scene:     scenic,
+		AutoColor: false,
 	})
 	if err != nil {
 		//return nil, xerrors.Wrapf(err, "code [%s]", code)
