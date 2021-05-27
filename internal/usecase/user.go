@@ -18,12 +18,13 @@ import (
 )
 
 type userUsecase struct {
-	userRepo domain.UserRepo
-	wxRepo   domain.WeixinRepo
+	userRepo      domain.UserRepo
+	redPacketRepo domain.UserRedPacketRepo
+	wxRepo        domain.WeixinRepo
 }
 
-func NewUserUsecase(userRepo domain.UserRepo, wxRepo domain.WeixinRepo) domain.UserUsecase {
-	return &userUsecase{userRepo: userRepo, wxRepo: wxRepo}
+func NewUserUsecase(userRepo domain.UserRepo, wxRepo domain.WeixinRepo, redPacketRepo domain.UserRedPacketRepo) domain.UserUsecase {
+	return &userUsecase{userRepo: userRepo, wxRepo: wxRepo, redPacketRepo: redPacketRepo}
 }
 
 func (u *userUsecase) Login(ctx context.Context, code string) (*domain.User, error) {
@@ -33,7 +34,7 @@ func (u *userUsecase) Login(ctx context.Context, code string) (*domain.User, err
 		return nil, errors.Newf(codes.Unauthenticated, "user", "code失效", "%v", err)
 	}
 	user, err := u.userRepo.FirstOrCreate(ctx, &domain.User{
-		OpenId: code2Session.OpenId,
+		OpenId:     code2Session.OpenId,
 		RecvStatus: constant.UserRecvStatusInit,
 	})
 	if err != nil {
@@ -60,7 +61,17 @@ func (u *userUsecase) CheckUserIllegal(ctx context.Context, openId string) (*dom
 	return user, nil
 }
 
-
 func (u *userUsecase) GetByOpenId(ctx context.Context, openId string) (*domain.User, error) {
 	return u.userRepo.GetByOpenId(ctx, openId)
+}
+
+func (u *userUsecase) ListRedPacket(ctx context.Context, userId uint64) ([]*domain.UserRedPacket, error) {
+	res, err := u.redPacketRepo.GetRedPacketByStatus(ctx, userId, constant.UserRedPacketSucc)
+	if errors.IsNotFound(err) {
+		return []*domain.UserRedPacket{}, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return []*domain.UserRedPacket{res}, nil
 }

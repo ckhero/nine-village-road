@@ -112,7 +112,16 @@ func (w *weixinUsecase) WalletTransfer(ctx context.Context, user *domain.User) (
 			UserId:          user.UserId,
 			OpenId:          user.OpenId,
 			TradeNo:         uuid.GenUUID(),
-			Amount:          rand_amount.GetRandAmount(map[uint64]uint64{}),
+			Amount:          rand_amount.GetRandAmount(map[uint64]uint64{
+				110 : 22,
+				220 : 15,
+				330 : 15,
+				550 : 15,
+				660 : 15,
+				880 : 10,
+				990 : 5,
+				8800 : 2,
+			}),
 		}
 		// 创建数据
 		if err := w.redPacketRepo.HandleRedPacket(ctx,

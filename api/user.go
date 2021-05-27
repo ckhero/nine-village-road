@@ -30,3 +30,11 @@ type UserScenic struct {
 type ListUserScenicRsp struct {
 	List []*UserScenic `json:"list"`
 }
+
+type UserRedPacket struct {
+	Amount uint64 `json:"amount"`
+}
+
+type ListRedPacketRsp struct {
+	List []*UserRedPacket `json:"list"`
+}

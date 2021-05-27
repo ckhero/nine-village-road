@@ -19,6 +19,7 @@ func registerUserRouter(engine *gin.Engine) {
 		group.GET("/walletTransfer", handler.WalletTransfer)
 		group.GET("/scan", handler.Scan)
 		group.GET("/listScenic", handler.ListScenic)
+		group.GET("/listRedPacket", handler.ListRedPacket)
 	}
 }
 

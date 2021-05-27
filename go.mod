@@ -9,6 +9,7 @@ require (
 	github.com/creack/pty v1.1.12 // indirect
 	github.com/fatih/color v1.12.0 // indirect
 	github.com/gin-gonic/gin v1.7.1
+	github.com/gogo/protobuf v1.3.1
 	github.com/google/wire v0.5.0
 	github.com/howeyc/fsnotify v0.9.0 // indirect
 	github.com/iGoogle-ink/gopay v1.5.39

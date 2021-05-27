@@ -45,4 +45,5 @@ type UserUsecase interface {
 	Login(ctx context.Context, code string) (*User, error)
 	GetByOpenId(ctx context.Context, openId string) (*User, error)
 	CheckUserIllegal(ctx context.Context, openId string) (*User, error)
+	ListRedPacket(ctx context.Context, userId uint64) ([]*UserRedPacket, error)
 }

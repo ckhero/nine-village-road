@@ -120,3 +120,16 @@ func (u *UserService) ListScenic(c *gin.Context) {
 	_ = json.DeepCopyPHP(list, &rspList)
 	format.Success(c, api.ListUserScenicRsp{List: rspList})
 }
+
+func (u *UserService) ListRedPacket(c *gin.Context) {
+	userId := gin2.GetUserId(c)
+	ctx, _ := context.ContextWithSpan(c)
+	list, err := u.uc.ListRedPacket(ctx, userId)
+	if err != nil {
+		format.Fail(c, err)
+		return
+	}
+	rspList := []*api.UserRedPacket{}
+	_ = json.DeepCopyPHP(list, &rspList)
+	format.Success(c, api.ListRedPacketRsp{List: rspList})
+}
