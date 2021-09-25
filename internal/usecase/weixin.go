@@ -105,6 +105,21 @@ func (w *weixinUsecase) WalletTransfer(ctx context.Context, user *domain.User) (
 			return nil, err
 		}
 	}
+	//weights := map[uint64]uint64{
+	//	110 : 46,
+	//	220 : 30,
+	//	330 : 30,
+	//	550 : 30,
+	//	660 : 30,
+	//	880 : 20,
+	//	990 : 10,
+	//	8800 : 1,
+	//}
+	weights := map[uint64]uint64{
+		30 : 50,
+		40 : 25,
+		50 : 25,
+	}
 	// 不存在记录
 	if redPacket == nil {
 		redPacket = &domain.UserRedPacket{
@@ -112,16 +127,7 @@ func (w *weixinUsecase) WalletTransfer(ctx context.Context, user *domain.User) (
 			UserId:          user.UserId,
 			OpenId:          user.OpenId,
 			TradeNo:         uuid.GenUUID(),
-			Amount:          rand_amount.GetRandAmount(map[uint64]uint64{
-				110 : 46,
-				220 : 30,
-				330 : 30,
-				550 : 30,
-				660 : 30,
-				880 : 20,
-				990 : 10,
-				8800 : 1,
-			}),
+			Amount:          rand_amount.GetRandAmount(weights),
 		}
 		// 创建数据
 		if err := w.redPacketRepo.HandleRedPacket(ctx,
@@ -137,7 +143,7 @@ func (w *weixinUsecase) WalletTransfer(ctx context.Context, user *domain.User) (
 			OpenId:    redPacket.OpenId,
 			CheckName: "NO_CHECK",
 			Amount:    redPacket.Amount,
-			Desc:      "测试",
+			Desc:      "点亮红包",
 		})
 		// 领取失败
 		if err != nil {

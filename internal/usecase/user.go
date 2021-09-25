@@ -35,6 +35,7 @@ func (u *userUsecase) Login(ctx context.Context, code string) (*domain.User, err
 	}
 	user, err := u.userRepo.FirstOrCreate(ctx, &domain.User{
 		OpenId:     code2Session.OpenId,
+		UnionId:     code2Session.UnionId,
 		RecvStatus: constant.UserRecvStatusInit,
 	})
 	if err != nil {
